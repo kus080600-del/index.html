@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>365天幸運隨機計畫 (手機優化版)</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --soft-blue: #e3f2fd;
+            --main-blue: #90caf9;
+            --deep-blue: #1e88e5;
+            --lucky-gold: #ffd700;
+            --bg: #f0f7ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: #445;
+            -webkit-tap-highlight-color: transparent; /* 移除手機點擊藍色陰影 */
+        }
+
+        /* 固定在頂部的統計資訊 */
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            padding: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .header-sticky h1 { margin: 0 0 10px 0; font-size: 1.4em; color: var(--deep-blue); }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .stat-box {
+            background: var(--soft-blue);
+            padding: 8px 5px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-box small { display: block; color: #789; font-size: 0.7em; }
+        .stat-box span { font-size: 1em; font-weight: bold; color: var(--deep-blue); }
+
+        /* 文案區 */
+        #quote-display {
+            background: #fff;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 0.95em;
+            color: #567;
+            line-height: 1.5;
+            border: 1px solid var(--soft-blue);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* 網格區 */
+        .grid-container {
+            padding: 0 15px 100px 15px; /* 底部留白避免遮擋 */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 手機版預設 4 列 */
+            gap: 10px;
+        }
+
+        /* 平板或桌面改為 6-8 列 */
+        @media (min-width: 600px) {
+            .grid { grid-template-columns: repeat(6, 1fr); }
+        }
+        @media (min-width: 900px) {
+            .grid { grid-template-columns: repeat(10, 1fr); }
+        }
+
+        .cell {
+            background: white;
+            border: 1.5px solid var(--soft-blue);
+            border-radius: 15px;
+            padding: 12px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s active;
+        }
+
+        /* 手機點擊效果 */
+        .cell:active {
+            transform: scale(0.9);
+            background: var(--soft-blue);
+        }
+
+        .cell .day-num { font-size: 0.6em; color: #abb; margin-bottom: 2px; }
+        .cell .amount { font-size: 0.9em; font-weight: bold; color: var(--deep-blue); }
+
+        .cell.checked {
+            background: var(--deep-blue);
+            border-color: var(--deep-blue);
+            color: white;
+        }
+        .cell.checked .day-num, .cell.checked .amount { color: white; }
+
+        /* 彈窗優化 */
+        #modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            z-index: 100; text-align: center; width: 80%; max-width: 300px;
+        }
+        #modal h2 { color: var(--lucky-gold); margin-top: 0; font-size: 1.2em; }
+        #modal button { background: var(--deep-blue); color: white; border: none; padding: 12px 30px; border-radius: 12px; margin-top: 15px; width: 100%; font-size: 1em; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99; }
+
+        .reset-btn { margin: 20px auto; display: block; border: none; background: none; color: #bbb; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div id="modal">
+    <h2 id="milestone-title">🌟 達成里程碑！</h2>
+    <p id="milestone-msg"></p>
+    <button onclick="closeModal()">收下好運</button>
+</div>
+
+<div class="header-sticky">
+    <h1>💎 365天幸運挑戰</h1>
+    <div class="stats">
+        <div class="stat-box"><small>累積金額</small><span id="total-money">$ 0</span></div>
+        <div class="stat-box"><small>已存天數</small><span id="total-days">0</span></div>
+        <div class="stat-box"><small>進度</small><span id="percent">0%</span></div>
+    </div>
+</div>
+
+<div id="quote-display">點擊格子開啟今日好運 ✨</div>
+
+<div class="grid-container">
+    <div class="grid" id="grid"></div>
+    <button class="reset-btn" onclick="reset()">重置計畫</button>
+</div>
+
+<script>
+    const quotes = [
+        "你值得擁有所有美好的事物，包括這筆存款帶來的自由。",
+        "今天的自律，是為了明天能隨心所欲地說『好』。",
+        "幸運小撇步：今天對鏡子裡的自己微笑，好事即將發生。",
+        "小小的硬幣是大大的底氣，你正在親手打造安全感。",
+        "幸運小撇步：深呼吸三次，感受這一刻的寧靜與豐盈。",
+        "未來的你，一定會感謝現在這個閃閃發光的自己。",
+        "信心來自於掌控感，你正在掌控你的未來。",
+        "幸運小撇步：喝一杯溫水，感謝自己今天的付出。",
+        "恭喜！你離夢想清單又近了一步。"
+    ];
+
+    const milestones = {
+        10: "太棒了！10 天的堅持已經讓習慣成自然。",
+        50: "50 天達成！你正在建立穩固的財富地基。",
+        100: "百日挑戰成功！你的毅力讓人佩服。",
+        200: "不知不覺走了一大半！未來可期。",
+        365: "🎉 奇蹟達成！你是最棒的挑戰者！"
+    };
+
+    let amountPool = JSON.parse(localStorage.getItem('amountPool_mobile'));
+    if (!amountPool) {
+        amountPool = Array.from({length: 365}, () => Math.floor(Math.random() * (500 - 50 + 1)) + 50);
+        localStorage.setItem('amountPool_mobile', JSON.stringify(amountPool));
+    }
+
+    let savedIndices = JSON.parse(localStorage.getItem('lucky_v_mobile_saved')) || [];
+
+    function render() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        let totalMoney = 0;
+
+        amountPool.forEach((amt, index) => {
+            const isSaved = savedIndices.includes(index);
+            const cell = document.createElement('div');
+            cell.className = `cell ${isSaved ? 'checked' : ''}`;
+            cell.innerHTML = `
+                <div class="day-num">${index + 1}</div>
+                <div class="amount">$${amt}</div>
+            `;
+            if (isSaved) totalMoney += amt;
+            cell.onclick = () => toggle(index);
+            grid.appendChild(cell);
+        });
+
+        document.getElementById('total-money').innerText = `$${totalMoney.toLocaleString()}`;
+        document.getElementById('total-days').innerText = savedIndices.length;
+        document.getElementById('percent').innerText = `${((savedIndices.length/365)*100).toFixed(0)}%`;
+    }
+
+    function toggle(index) {
+        const idxInSaved = savedIndices.indexOf(index);
+        if (idxInSaved > -1) {
+            savedIndices.splice(idxInSaved, 1);
+        } else {
+            savedIndices.push(index);
+            checkMilestone(savedIndices.length);
+            showQuote();
+            // 點擊震動回饋 (部分安卓支援)
+            if (window.navigator.vibrate) window.navigator.vibrate(20);
+        }
+        localStorage.setItem('lucky_v_mobile_saved', JSON.stringify(savedIndices));
+        render();
+    }
+
+    function showQuote() {
+        const q = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById('quote-display').innerText = "✨ " + q;
+    }
+
+    function checkMilestone(count) {
+        if (milestones[count]) {
+            confetti({ particleCount: 100, spread: 50, origin: { y: 0.8 } });
+            document.getElementById('milestone-msg').innerText = milestones[count];
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function reset() {
+        if (confirm("確定要重置嗎？")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    render();
+</script>
+
+</body>
+</html>
+
+
