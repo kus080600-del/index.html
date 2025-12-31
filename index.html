@@ -27,22 +27,23 @@
             padding-bottom: 60px;
         }
 
-        /* 標題與願望區 */
-        header { padding: 20px 0; text-align: center; }
-        h1 { font-family: 'Playfair Display', serif; color: var(--dark-gold); margin: 0; font-size: 1.6rem; }
+        header { padding: 25px 0; text-align: center; }
+        h1 { font-family: 'Playfair Display', serif; color: var(--dark-gold); margin: 0; font-size: 1.6rem; letter-spacing: 2px; }
 
+        /* 願望卡片 */
         .wish-card {
             width: 88%; max-width: 450px;
             background: var(--bg-card);
-            padding: 20px; border-radius: 20px;
+            padding: 22px; border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             margin-bottom: 20px; border: 1px solid rgba(212,175,55,0.3);
         }
 
         .wish-input {
             width: 100%; border: none; border-bottom: 2px solid #eee;
-            font-size: 1.2rem; margin-bottom: 12px; outline: none;
+            font-size: 1.25rem; margin-bottom: 12px; outline: none;
             font-family: inherit; color: var(--deep-blue); font-weight: bold;
+            background: transparent;
         }
 
         .progress-bar-container {
@@ -53,11 +54,11 @@
         #progress-fill {
             height: 100%; width: 0%;
             background: linear-gradient(90deg, var(--gold), #f9d976);
-            transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: width 1s ease;
         }
 
-        /* 抽卡互動區 */
-        .card-container { perspective: 1000px; width: 180px; height: 250px; margin: 10px 0; }
+        /* 抽卡視覺 */
+        .card-container { perspective: 1000px; width: 170px; height: 240px; margin: 10px 0; }
         .card {
             width: 100%; height: 100%; position: relative;
             transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -69,41 +70,52 @@
             border: 4px solid var(--gold); display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
-        .card-front { background: var(--deep-blue); color: var(--gold); font-size: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .card-front { background: var(--deep-blue); color: var(--gold); font-size: 50px; }
         .card-back { background: white; transform: rotateY(180deg); }
 
         .draw-btn {
             background: var(--gold); color: white; border: none;
-            padding: 12px 50px; border-radius: 30px; font-size: 1.1rem;
+            padding: 14px 60px; border-radius: 35px; font-size: 1.1rem;
             font-weight: bold; box-shadow: 0 5px 15px rgba(212,175,55,0.3);
-            margin: 15px 0; cursor: pointer;
+            margin: 20px 0; cursor: pointer;
         }
 
-        /* 語錄區 */
-        .quote-box {
-            width: 80%; text-align: center; min-height: 60px;
-            font-style: italic; color: #666; font-size: 0.95rem; margin-bottom: 20px;
-            padding: 0 20px; line-height: 1.6;
+        /* 雙文案區 */
+        .combo-box {
+            width: 85%; max-width: 450px;
+            display: flex; flex-direction: column; gap: 12px;
+            margin-bottom: 30px;
         }
+        .text-tile {
+            background: rgba(255,255,255,0.6);
+            padding: 15px; border-radius: 12px;
+            border-left: 4px solid var(--gold);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .tile-label {
+            font-size: 0.7rem; color: var(--dark-gold);
+            font-weight: bold; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 5px;
+        }
+        .tile-content { font-size: 0.95rem; line-height: 1.5; color: #444; }
 
-        /* 紀錄格子區 */
+        /* 紀錄格子 */
         .history-grid {
             display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 10px; width: 90%; max-width: 450px; padding: 10px;
+            gap: 12px; width: 92%; max-width: 450px; padding: 10px;
         }
         .grid-item {
-            aspect-ratio: 1/1; background: #fdfdfd; border-radius: 12px;
+            aspect-ratio: 1/1; background: #fff; border-radius: 12px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-size: 0.8rem; color: #ccc; border: 1px solid #eee;
+            font-size: 0.9rem; color: #ccc; border: 1px solid #eee;
         }
         .grid-item.filled {
             background: linear-gradient(135deg, #fffcf0 0%, #fff3cc 100%);
             border-color: var(--gold); color: var(--dark-gold); font-weight: bold;
-            box-shadow: 0 3px 6px rgba(212,175,55,0.15);
         }
-        .grid-item .day-num { font-size: 0.7rem; opacity: 0.5; margin-bottom: 3px; }
+        .grid-item .day-num { font-size: 0.7rem; opacity: 0.5; margin-bottom: 4px; }
 
-        .reset-btn { background: none; border: 1px solid #ccc; color: #999; padding: 6px 20px; border-radius: 20px; font-size: 0.8rem; margin-top: 50px; cursor: pointer; }
+        .reset-btn { background: none; border: 1px solid #ccc; color: #999; padding: 8px 20px; border-radius: 20px; font-size: 0.8rem; margin-top: 60px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -115,13 +127,13 @@
 <div class="wish-card">
     <input type="text" id="wish-title" class="wish-input" placeholder="我的願望清單..." onchange="saveData()">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.9rem;">目標：$<input type="number" id="wish-target" style="width: 80px; border:none; border-bottom:1px solid #ddd; outline:none;" placeholder="50000" onchange="saveData()"></span>
-        <span id="stat-total" style="font-weight: bold; color: var(--gold); font-size: 1.2rem;">$0</span>
+        <span style="font-size: 0.95rem;">目標：$<input type="number" id="wish-target" style="width: 90px; border:none; border-bottom:1px solid #ddd; outline:none;" placeholder="50000" onchange="saveData()"></span>
+        <span id="stat-total" style="font-weight: bold; color: var(--gold); font-size: 1.3rem;">$0</span>
     </div>
     <div class="progress-bar-container">
         <div id="progress-fill"></div>
     </div>
-    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #888;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #888;">
         <span id="stat-days">已堅持: 0 天</span>
         <span id="stat-remain">剩餘目標: $0</span>
     </div>
@@ -131,16 +143,23 @@
     <div class="card" id="card">
         <div class="card-face card-front">✦</div>
         <div class="card-face card-back">
-            <span style="font-size: 0.8rem; color: #888;">今日儲蓄</span>
-            <div id="draw-result" style="font-size: 2.5rem; font-weight: bold; color: var(--dark-gold);">$0</div>
+            <span style="font-size: 0.85rem; color: #888;">獲得儲蓄金</span>
+            <div id="draw-result" style="font-size: 2.8rem; font-weight: bold; color: var(--dark-gold);">$0</div>
         </div>
     </div>
 </div>
 
 <button class="draw-btn" onclick="handleDraw()">今日抽卡</button>
 
-<div class="quote-box" id="quote-text">
-    「點擊卡片開始今日的開運儲蓄吧！」
+<div class="combo-box">
+    <div class="text-tile">
+        <div class="tile-label">✧ 心靈語錄 ✧</div>
+        <div class="tile-content" id="wisdom-text">點擊卡片，開啟今日計畫。</div>
+    </div>
+    <div class="text-tile">
+        <div class="tile-label">✦ 開運小撇步 ✦</div>
+        <div class="tile-content" id="tip-text">準備好迎接幸運的一天了嗎？</div>
+    </div>
 </div>
 
 <div class="history-grid" id="history-grid"></div>
@@ -148,21 +167,37 @@
 <button class="reset-btn" onclick="resetAll()">重新設置挑戰</button>
 
 <script>
-    const quotes = [
-        "積少成多，財富是時間的果實。",
-        "今天的自律，是明天的自由。",
-        "開運小撇步：整理錢包，讓財氣流通。",
-        "優雅是一種態度，儲蓄是一種習慣。",
-        "每一次投入，都讓夢想更近一步。",
-        "理財不在於致富，而在於能自由選擇生活。",
-        "開運小撇步：今天適合穿淺藍色，會帶來好心情喔！",
-        "每一分努力，都會在未來溫柔地回饋你。"
-    ];
+    const contentLib = {
+        quotes: [
+            "積少成多，財富是時間開出的花朵。",
+            "今天的自律，是為了明天能擁有更多選擇的自由。",
+            "理財不在於致富，而在於能不為金錢委屈生活。",
+            "每一份投入，都是對理想生活的一張選票。",
+            "慢即是快，持之以恆的儲蓄勝過短暫的投機。",
+            "財富不奔向急躁的人，它喜歡住在耐心的人家裡。",
+            "每一次存下小錢，都在厚實你面對未來的底氣。",
+            "夢想雖然昂貴，但拆解成365天就不再遙不可及。",
+            "不要小看銅板的力量，海洋也是由無數水滴匯成的。",
+            "今天的儲蓄，是給未來的自己一份最體面的禮物。"
+        ],
+        tips: [
+            "整理錢包，讓鈔票同向整齊排列，財氣更順。",
+            "今天適合穿戴金色或黃色元素，能提升財運能量。",
+            "試著在玄關放一盆綠色植物，能為家裡招來生機。",
+            "睡前冥想三分鐘夢想實現的樣子，吸引力法則會幫你。",
+            "保持錢包內乾淨，不放超過一週的收據與發票。",
+            "擦亮常穿的鞋子，好運是從乾淨的腳底開始的。",
+            "今天對身邊的人微笑，良好的正向循環會帶來意外之財。",
+            "晨起開窗五分鐘換氣，讓空間裡的財氣重新流動。",
+            "睡前對今天存下的金額說聲謝謝，感恩能吸引更多財富。",
+            "把常用的錢包放在屋宅的財位，不要隨意丟在地上。"
+        ]
+    };
 
     let state = { wish: "", target: 50000, records: [] };
 
     function init() {
-        const saved = localStorage.getItem('savings_v4');
+        const saved = localStorage.getItem('savings_v6');
         if (saved) state = JSON.parse(saved);
         document.getElementById('wish-title').value = state.wish || "";
         document.getElementById('wish-target').value = state.target || 50000;
@@ -170,7 +205,6 @@
         updateUI();
     }
 
-    // 魔法音效函數
     function playMagicSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -178,12 +212,12 @@
             const gain = ctx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(440, ctx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(1046, ctx.currentTime + 0.5); 
+            osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.4); 
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
             osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.5);
-        } catch(e) { console.log("Audio logic error"); }
+            osc.start(); osc.stop(ctx.currentTime + 0.4);
+        } catch(e) {}
     }
 
     function renderGrid() {
@@ -201,11 +235,10 @@
 
     function updateUI() {
         const total = state.records.reduce((a, b) => a + b, 0);
-        const target = state.target || 0;
         document.getElementById('stat-total').innerText = '$' + total.toLocaleString();
-        document.getElementById('stat-remain').innerText = '剩餘: $' + Math.max(0, target - total).toLocaleString();
+        document.getElementById('stat-remain').innerText = '剩餘目標: $' + Math.max(0, state.target - total).toLocaleString();
         document.getElementById('stat-days').innerText = `已堅持: ${state.records.length} 天`;
-        const progress = target > 0 ? (total / target) * 100 : 0;
+        const progress = state.target > 0 ? (total / state.target) * 100 : 0;
         document.getElementById('progress-fill').style.width = Math.min(100, progress) + '%';
     }
 
@@ -219,12 +252,18 @@
         playMagicSound();
         const amount = Math.floor(Math.random() * (300 - 50 + 1)) + 50;
         document.getElementById('draw-result').innerText = '$' + amount;
-        document.getElementById('quote-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // 同時隨機選取兩種文案
+        const quote = contentLib.quotes[Math.floor(Math.random() * contentLib.quotes.length)];
+        const tip = contentLib.tips[Math.floor(Math.random() * contentLib.tips.length)];
+        
+        document.getElementById('wisdom-text').innerText = quote;
+        document.getElementById('tip-text').innerText = tip;
         
         card.classList.add('is-flipped');
 
         confetti({
-            particleCount: 100, spread: 70, origin: { y: 0.8 },
+            particleCount: 120, spread: 80, origin: { y: 0.7 },
             colors: ['#D4AF37', '#F0F8FF', '#1E3A5F']
         });
 
@@ -242,13 +281,13 @@
     function saveData() {
         state.wish = document.getElementById('wish-title').value;
         state.target = parseInt(document.getElementById('wish-target').value) || 0;
-        localStorage.setItem('savings_v4', JSON.stringify(state));
+        localStorage.setItem('savings_v6', JSON.stringify(state));
         updateUI();
     }
 
     function resetAll() {
-        if (confirm("確定要重置嗎？所有紀錄將會消失！")) {
-            localStorage.removeItem('savings_v4');
+        if (confirm("確定要重置嗎？")) {
+            localStorage.removeItem('savings_v6');
             location.reload();
         }
     }
