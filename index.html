@@ -78,7 +78,6 @@
             margin-bottom: 25px; cursor: pointer;
         }
 
-        /* 雙文案區 */
         .combo-box { width: 88%; max-width: 450px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
         .text-tile {
             background: rgba(255,255,255,0.7); padding: 15px; border-radius: 15px;
@@ -150,39 +149,78 @@
 <button class="reset-btn" onclick="resetAll()">重新設置挑戰</button>
 
 <script>
-    const contentLib = {
-        quotes: ["積少成多，財富是時間開出的花朵。", "今天的自律，是為了明天能擁有更多選擇的自由。", "理財不在於致富，而在於能不為金錢委屈生活。", "每一份投入，都是對理想生活的一張選票。", "慢即是快，持之以恆的儲蓄勝過短暫的投機。", "每一次存下小錢，都在厚實你面對未來的底氣。", "不要小看銅板的力量，海洋也是由無數水滴匯成的。", "今天的儲蓄，是給未來的自己一份最體面的禮物。"],
-        tips: ["整理錢包，讓鈔票同向整齊排列，財氣更順。", "今天適合穿戴金色或黃色元素，能提升財運。", "試著在玄關放一盆綠色植物，為家裡招來生機。", "保持錢包內乾淨，不放超過一週的收據與發票。", "擦亮常穿的鞋子，好運是從乾淨的腳底開始的。", "晨起開窗五分鐘換氣，讓空間裡的財氣重新流動。", "睡前對今天存下的金額說聲謝謝，吸引更多財富。", "把常用錢包放在財位，不要隨意丟在地上。"]
+    const quotesBase = [
+        "積少成多，財富是時間開出的花朵。",
+        "今天的自律，是為了明天能擁有更多選擇的自由。",
+        "理財不在於致富，而在於能不為金錢委屈生活。",
+        "每一份投入，都是對理想生活的一張選票。",
+        "慢即是快，持之以恆的儲蓄勝過短暫的投機。",
+        "每一次存下小錢，都在厚實你面對未來的底氣。",
+        "財富不奔向急躁的人，它喜歡住在耐心的人家裡。",
+        "今天的儲蓄，是給未來的自己一份最體面的禮物。",
+        "預算告急時的從容，來自於平日滴水穿石的累積。",
+        "金錢只是工具，自律才是讓你通往自由的鑰匙。"
+    ];
+
+    const tipsBase = [
+        "整理錢包，讓鈔票同向整齊排列，財氣更順。",
+        "今天適合穿戴金色或黃色元素，能提升財運。",
+        "試著在玄關放一盆綠色植物，為家裡招來生機。",
+        "保持錢包內乾淨，不放超過一週的收據與發票。",
+        "擦亮常穿的鞋子，好運是從乾淨的腳底開始的。",
+        "晨起開窗五分鐘換氣，讓空間裡的財氣重新流動。",
+        "睡前對今天存下的金額說聲謝謝，感恩能吸引更多財富。",
+        "把常用錢包放在財位，不要隨意丟在地上。",
+        "今天對身邊的人微笑，良好的正向循環會帶來意外之財。",
+        "定期清理手機中不常用的 App，清空數位雜訊能讓思維更清晰。"
+    ];
+
+    let state = { 
+        wish: "", 
+        target: 50000, 
+        records: [],
+        usedQuoteIndices: [],
+        usedTipIndices: []
     };
 
-    let state = { wish: "", target: 50000, records: [] };
-
-    // 音效播放函數
     function playMagicSound() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             const ctx = new AudioContext();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-            osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.4); // C6
-            
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.4);
             gain.gain.setValueAtTime(0.15, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-            
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
-            osc.start();
-            osc.stop(ctx.currentTime + 0.4);
-        } catch(e) { console.log("Audio not supported"); }
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.4);
+        } catch(e) {}
+    }
+
+    // 取得不重複的索引
+    function getUnusedIndex(baseArray, usedListKey) {
+        if (state[usedListKey].length >= baseArray.length) {
+            state[usedListKey] = []; // 全抽過了就重置
+        }
+        let index;
+        do {
+            index = Math.floor(Math.random() * baseArray.length);
+        } while (state[usedListKey].includes(index));
+        
+        state[usedListKey].push(index);
+        return index;
     }
 
     function init() {
-        const saved = localStorage.getItem('savings_v_final_plus');
+        const saved = localStorage.getItem('savings_v_no_repeat');
         if (saved) state = JSON.parse(saved);
+        
+        // 確保新屬性存在
+        if(!state.usedQuoteIndices) state.usedQuoteIndices = [];
+        if(!state.usedTipIndices) state.usedTipIndices = [];
+
         document.getElementById('wish-title').value = state.wish || "";
         document.getElementById('wish-target').value = state.target || 50000;
         renderGrid();
@@ -219,14 +257,17 @@
             return;
         }
 
-        // 播放音效
         playMagicSound();
 
         const amount = Math.floor(Math.random() * (300 - 50 + 1)) + 50;
         document.getElementById('draw-result').innerText = '$' + amount;
         
-        document.getElementById('wisdom-text').innerText = contentLib.quotes[Math.floor(Math.random() * contentLib.quotes.length)];
-        document.getElementById('tip-text').innerText = contentLib.tips[Math.floor(Math.random() * contentLib.tips.length)];
+        // 獲取不重複文案
+        const quoteIdx = getUnusedIndex(quotesBase, 'usedQuoteIndices');
+        const tipIdx = getUnusedIndex(tipsBase, 'usedTipIndices');
+        
+        document.getElementById('wisdom-text').innerText = quotesBase[quoteIdx];
+        document.getElementById('tip-text').innerText = tipsBase[tipIdx];
         
         card.classList.add('is-flipped');
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.75 }, colors: ['#D4AF37', '#F0F8FF', '#1E3A5F'] });
@@ -246,12 +287,12 @@
     function saveData() {
         state.wish = document.getElementById('wish-title').value;
         state.target = parseInt(document.getElementById('wish-target').value) || 0;
-        localStorage.setItem('savings_v_final_plus', JSON.stringify(state));
+        localStorage.setItem('savings_v_no_repeat', JSON.stringify(state));
     }
 
     function resetAll() {
-        if (confirm("確定要重置挑戰嗎？")) {
-            localStorage.removeItem('savings_v_final_plus');
+        if (confirm("確定要重置挑戰嗎？這會清空所有紀錄與不重複清單。")) {
+            localStorage.removeItem('savings_v_no_repeat');
             location.reload();
         }
     }
