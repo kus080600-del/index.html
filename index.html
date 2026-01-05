@@ -111,7 +111,7 @@
 <div class="wish-card">
     <input type="text" id="wish-title" class="wish-input" placeholder="我的願望清單..." onchange="saveData()">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.95rem;">目標：$<input type="number" id="wish-target" style="width: 100px; border:none; border-bottom:1px solid #ddd; outline:none; background:transparent; font-size:1.1rem; color:var(--gold); font-weight:bold;" placeholder="50000" onchange="saveData()"></span>
+        <span style="font-size: 0.95rem;">目標金額：$<input type="number" id="wish-target" style="width: 100px; border:none; border-bottom:1px solid #ddd; outline:none; background:transparent; font-size:1.1rem; color:var(--gold); font-weight:bold;" placeholder="50000" onchange="saveData()"></span>
         <span id="stat-total" style="font-weight: bold; color: var(--deep-blue); font-size: 1.3rem;">$0</span>
     </div>
     <div class="progress-bar-container"><div id="progress-fill"></div></div>
@@ -199,10 +199,9 @@
         } catch(e) {}
     }
 
-    // 取得不重複的索引
     function getUnusedIndex(baseArray, usedListKey) {
         if (state[usedListKey].length >= baseArray.length) {
-            state[usedListKey] = []; // 全抽過了就重置
+            state[usedListKey] = [];
         }
         let index;
         do {
@@ -217,7 +216,6 @@
         const saved = localStorage.getItem('savings_v_no_repeat');
         if (saved) state = JSON.parse(saved);
         
-        // 確保新屬性存在
         if(!state.usedQuoteIndices) state.usedQuoteIndices = [];
         if(!state.usedTipIndices) state.usedTipIndices = [];
 
@@ -262,7 +260,6 @@
         const amount = Math.floor(Math.random() * (300 - 50 + 1)) + 50;
         document.getElementById('draw-result').innerText = '$' + amount;
         
-        // 獲取不重複文案
         const quoteIdx = getUnusedIndex(quotesBase, 'usedQuoteIndices');
         const tipIdx = getUnusedIndex(tipsBase, 'usedTipIndices');
         
@@ -288,6 +285,7 @@
         state.wish = document.getElementById('wish-title').value;
         state.target = parseInt(document.getElementById('wish-target').value) || 0;
         localStorage.setItem('savings_v_no_repeat', JSON.stringify(state));
+        updateUI(); // 確保修改目標金額後，UI 立即更新進度條
     }
 
     function resetAll() {
@@ -301,3 +299,4 @@
 </script>
 </body>
 </html>
+
